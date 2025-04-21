@@ -1,4 +1,5 @@
 "use client";
+import { useTypingConfig } from "@/context/TypingConfigContext";
 import {
   AtSign,
   Clock,
@@ -7,7 +8,6 @@ import {
   Pen,
   Type,
 } from "lucide-react";
-import { useState } from "react";
 
 const ToggleButton = ({
   active,
@@ -51,15 +51,20 @@ const OptionButton = ({
 );
 
 export default function Header() {
-  const [punctuation, setPunctuation] = useState(false);
-  const [numbers, setNumbers] = useState(false);
-  const [optionSelected, setOptionSelected] = useState<
-    "time" | "words" | "quote"
-  >("time");
-  const [timeSelected, setTimeSelected] = useState("15");
-  const [wordsSelected, setWordsSelected] = useState("10");
-  const [quoteSelected, setQuoteSelected] = useState("all");
-
+  const {
+    punctuation,
+    numbers,
+    mode,
+    time,
+    words,
+    quote,
+    setPunctuation,
+    setNumbers,
+    setMode,
+    setTime,
+    setWords,
+    setQuote,
+  } = useTypingConfig();
   const configOptions = [
     {
       label: "punctuation",
@@ -86,15 +91,15 @@ export default function Header() {
   const quoteOptions = ["all", "short", "medium", "long", "thicc"];
 
   const renderOptions = () => {
-    if (optionSelected === "time") {
+    if (mode === "time") {
       return (
         <>
           {timeOptions.map((t) => (
             <OptionButton
               key={t}
               label={t}
-              active={timeSelected === t}
-              onClick={() => setTimeSelected(t)}
+              active={time === t}
+              onClick={() => setTime(t)}
             />
           ))}
           <Pen className="w-3.5 h-3.5 ml-2.5 text-gray-500 hover:text-white cursor-pointer" />
@@ -102,15 +107,15 @@ export default function Header() {
       );
     }
 
-    if (optionSelected === "words") {
+    if (mode === "words") {
       return (
         <>
           {wordOptions.map((w) => (
             <OptionButton
               key={w}
               label={w}
-              active={wordsSelected === w}
-              onClick={() => setWordsSelected(w)}
+              active={words === w}
+              onClick={() => setWords(w)}
             />
           ))}
           <Pen className="w-3.5 h-3.5 ml-2.5 text-gray-500 hover:text-white cursor-pointer" />
@@ -122,8 +127,8 @@ export default function Header() {
       <OptionButton
         key={q}
         label={q}
-        active={quoteSelected === q}
-        onClick={() => setQuoteSelected(q)}
+        active={quote === q}
+        onClick={() => setQuote(q)}
       />
     ));
   };
@@ -150,10 +155,8 @@ export default function Header() {
             key={label}
             label={label}
             icon={icon}
-            active={optionSelected === label}
-            onClick={() =>
-              setOptionSelected(label as "time" | "words" | "quote")
-            }
+            active={mode === label}
+            onClick={() => setMode(label as "time" | "words" | "quote")}
           />
         ))}
       </div>
