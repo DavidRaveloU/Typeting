@@ -1,37 +1,46 @@
 "use client";
 
-import React, { useState, useRef, useEffect } from "react";
-
-const WORD_LIST = [
-  "the", "quick", "brown", "fox", "jumps", "over", "lazy", "dog", "hello", "world",
-  "type", "speed", "keyboard", "practice", "random", "words", "challenge", "focus",
-  "improve", "accuracy", "skill", "test", "game", "letter", "space"
-];
+import { useTypingConfig } from "@/context/TypingConfigContext";
+import React, { useEffect, useRef, useState } from "react";
+import { generateWords } from "@/utils/sentenceGenerator";
+import { COLORS } from "@/utils/constants";
 
 function getRandomSentence(length: number) {
   const words = [];
   for (let i = 0; i < length; i++) {
-    words.push(WORD_LIST[Math.floor(Math.random() * WORD_LIST.length)]);
+    words.push("quick");
   }
-  return words;
+  return words.join(" ");
 }
 
-const SENTENCE_LENGTH = 25;
-
-const COLORS = {
-  correct: "#fff",
-  incorrect: "#ff5555",
-  skipped: "#FFFF00",
-  extra: "#b22222",
-  pending: "#888888",
-  cursor: "#fff"
-};
-
 const TypingArea: React.FC = () => {
+  const {
+    punctuation,
+    numbers,
+    mode,
+    words: configWords,
+    quoteLength,
+  } = useTypingConfig();
   const [words, setWords] = useState<string[]>([]);
+
   useEffect(() => {
-    setWords(getRandomSentence(SENTENCE_LENGTH));
-  }, []);
+    let generatedText: string[] | string = [];
+
+    if (mode === "words" || mode === "time") {
+      const wordCount = mode === "time" ? 50 : parseInt(configWords);
+      generatedText = generateWords(wordCount, { punctuation, numbers });
+    } else if (mode === "quote") {
+      generatedText = getRandomSentence(parseInt(quoteLength));
+    }
+
+    setWords(
+      Array.isArray(generatedText) ? generatedText : generatedText.split(" ")
+    );
+    setInput("");
+    setCurrentWordIdx(0);
+    setTypedWords([]);
+    setSkippedMap({});
+  }, [mode, configWords, punctuation, numbers, quoteLength]);
 
   const [input, setInput] = useState<string>("");
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
@@ -52,17 +61,18 @@ const TypingArea: React.FC = () => {
       if (val.trim().length === 0) return;
 
       const trimmed = val.slice(0, -1);
-      setTypedWords(prev => {
+      setTypedWords((prev) => {
         const copy = [...prev];
         copy[currentWordIdx] = trimmed;
         return copy;
       });
 
       const originalWord = words[currentWordIdx] || "";
-      const isSkipped = trimmed.length < originalWord.length && trimmed.length > 0;
-      setSkippedMap(prev => ({ ...prev, [currentWordIdx]: isSkipped }));
+      const isSkipped =
+        trimmed.length < originalWord.length && trimmed.length > 0;
+      setSkippedMap((prev) => ({ ...prev, [currentWordIdx]: isSkipped }));
 
-      setCurrentWordIdx(idx => Math.min(idx + 1, words.length));
+      setCurrentWordIdx((idx) => Math.min(idx + 1, words.length));
       setInput("");
       return;
     }
@@ -85,7 +95,7 @@ const TypingArea: React.FC = () => {
       setInput(prevInput);
       minLengthRef.current = prevInput.length;
 
-      setSkippedMap(prev => {
+      setSkippedMap((prev) => {
         const copy = { ...prev };
         delete copy[prevIdx];
         return copy;
@@ -117,8 +127,8 @@ const TypingArea: React.FC = () => {
         wordIdx < currentWordIdx
           ? typedWords[wordIdx] || ""
           : wordIdx === currentWordIdx
-            ? input
-            : "";
+          ? input
+          : "";
 
       const isSkipped = skippedMap[wordIdx];
       const isActive = wordIdx === currentWordIdx;
@@ -156,7 +166,7 @@ const TypingArea: React.FC = () => {
               fontWeight: 500,
               fontSize: 38,
               borderBottom: showCursor ? `2px solid ${COLORS.cursor}` : "none",
-              transition: "border-bottom 0.1s"
+              transition: "border-bottom 0.1s",
             }}
           >
             {char || (showCursor ? "\u00a0" : "")}
@@ -182,7 +192,7 @@ const TypingArea: React.FC = () => {
         fontFamily: "monospace",
         minHeight: 180,
         maxWidth: 1300,
-        margin: "0 auto"
+        margin: "0 auto",
       }}
       onClick={() => inputRef.current?.focus()}
       tabIndex={0}
@@ -198,7 +208,7 @@ const TypingArea: React.FC = () => {
           userSelect: "none",
           whiteSpace: "normal",
           wordBreak: "break-word",
-          overflowWrap: "anywhere"
+          overflowWrap: "anywhere",
         }}
       >
         {renderWords()}
@@ -211,7 +221,7 @@ const TypingArea: React.FC = () => {
         style={{
           opacity: 0,
           position: "absolute",
-          left: -9999
+          left: -9999,
         }}
         spellCheck={false}
         autoFocus
