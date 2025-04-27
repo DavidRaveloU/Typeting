@@ -1,5 +1,6 @@
 "use client";
 import { useTypingConfig } from "@/context/TypingConfigContext";
+import type { QuoteLength } from "@/context/TypingConfigContext";
 import {
   AtSign,
   Clock,
@@ -88,7 +89,7 @@ export default function Header() {
 
   const timeOptions = ["15", "30", "60", "120"];
   const wordOptions = ["10", "15", "50", "100"];
-  const quoteOptions = ["all", "short", "medium", "long", "thicc"];
+  const quoteOptions: QuoteLength[] = ["all", "short", "medium", "long", "thicc"];
 
   const renderOptions = () => {
     if (mode === "time") {
