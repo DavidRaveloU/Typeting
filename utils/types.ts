@@ -1,6 +1,7 @@
 export interface SentenceGeneratorOptions {
   punctuation: boolean;
   numbers: boolean;
+  quotes: 'all' | 'short' | 'medium' | 'long' | 'thicc' | 'none';
 }
 
 export type TokenType = 
@@ -14,6 +15,6 @@ export type TokenType =
 
 export interface WordToken {
   word: string;
-  type: TokenType;
+  type: 'word' | 'number' | 'punctuation' | 'quote-open' | 'quote-close' | 'parenthesis-open' | 'parenthesis-close';
   shouldHaveSpace: boolean;
 }
