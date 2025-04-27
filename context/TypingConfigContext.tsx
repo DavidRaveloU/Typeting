@@ -3,6 +3,7 @@
 import { createContext, ReactNode, useContext, useState } from "react";
 
 type Mode = "time" | "words" | "quote";
+export type QuoteLength = "all" | "short" | "medium" | "long" | "thicc";
 
 // 1. Crear y definir el TypingConfigContext
 const TypingConfigContext = createContext<TypingConfig | undefined>(undefined);
@@ -13,15 +14,13 @@ interface TypingConfig {
   mode: Mode;
   time: string;
   words: string;
-  quote: string;
-  quoteLength: string;
+  quote: QuoteLength;
   setPunctuation: (value: boolean) => void;
   setNumbers: (value: boolean) => void;
   setMode: (mode: Mode) => void;
   setTime: (value: string) => void;
   setWords: (value: string) => void;
-  setQuote: (value: string) => void;
-  setQuoteLength: (value: string) => void;
+  setQuote: (value: QuoteLength) => void;
 }
 
 export const TypingConfigProvider = ({ children }: { children: ReactNode }) => {
@@ -30,8 +29,7 @@ export const TypingConfigProvider = ({ children }: { children: ReactNode }) => {
   const [mode, setMode] = useState<Mode>("time");
   const [time, setTime] = useState("15");
   const [words, setWords] = useState("10");
-  const [quote, setQuote] = useState("all");
-  const [quoteLength, setQuoteLength] = useState("50");
+  const [quote, setQuote] = useState<QuoteLength>("all");
 
   return (
     // 2. Proveer el contexto
@@ -43,14 +41,12 @@ export const TypingConfigProvider = ({ children }: { children: ReactNode }) => {
         time,
         words,
         quote,
-        quoteLength,
         setPunctuation,
         setNumbers,
         setMode,
         setTime,
         setWords,
         setQuote,
-        setQuoteLength,
       }}
     >
       {children}
