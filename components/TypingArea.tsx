@@ -5,13 +5,14 @@ import React, { useEffect, useRef, useState } from "react";
 import { generateWords } from "@/utils/sentenceGenerator";
 import { COLORS } from "@/utils/constants";
 
-function getRandomSentence(length: number) {
-  const words = [];
-  for (let i = 0; i < length; i++) {
-    words.push("quick");
-  }
-  return words.join(" ");
-}
+// Variables de estilo que puedes ajustar
+const STYLE_CONFIG = {
+  wordSpacing: "1.3rem",   
+  fontSize: 38,
+  fontWeight: 500,
+  letterSpacing: "0.05em",
+  lineHeight: 2
+};
 
 const TypingArea: React.FC = () => {
   const {
@@ -19,28 +20,34 @@ const TypingArea: React.FC = () => {
     numbers,
     mode,
     words: configWords,
-    quoteLength,
+    quote,
   } = useTypingConfig();
   const [words, setWords] = useState<string[]>([]);
 
   useEffect(() => {
-    let generatedText: string[] | string = [];
+    let generatedText: string[] = [];
 
-    if (mode === "words" || mode === "time") {
+    if (mode === "quote") {
+      generatedText = generateWords(1, { 
+        punctuation: false, 
+        numbers: false,
+        quotes: quote 
+      });
+    } else {
       const wordCount = mode === "time" ? 50 : parseInt(configWords);
-      generatedText = generateWords(wordCount, { punctuation, numbers });
-    } else if (mode === "quote") {
-      generatedText = getRandomSentence(parseInt(quoteLength));
+      generatedText = generateWords(wordCount, { 
+        punctuation, 
+        numbers, 
+        quotes: 'none' 
+      });
     }
 
-    setWords(
-      Array.isArray(generatedText) ? generatedText : generatedText.split(" ")
-    );
+    setWords(generatedText);
     setInput("");
     setCurrentWordIdx(0);
     setTypedWords([]);
     setSkippedMap({});
-  }, [mode, configWords, punctuation, numbers, quoteLength]);
+  }, [mode, configWords, punctuation, numbers, quote]);
 
   const [input, setInput] = useState<string>("");
   const [currentWordIdx, setCurrentWordIdx] = useState(0);
@@ -81,7 +88,6 @@ const TypingArea: React.FC = () => {
   };
 
   const handleKeyDown = (e: React.KeyboardEvent<HTMLInputElement>) => {
-    // Restaurar palabra anterior
     if (
       e.key === "Backspace" &&
       inputRef.current &&
@@ -105,7 +111,6 @@ const TypingArea: React.FC = () => {
       return;
     }
 
-    // Evitar borrar debajo del mínimo
     if (
       e.key === "Backspace" &&
       minLengthRef.current !== null &&
@@ -141,16 +146,19 @@ const TypingArea: React.FC = () => {
 
         if (typed[i] !== undefined) {
           if (i < word.length) {
-            color = typed[i] === word[i] ? COLORS.correct : COLORS.incorrect;
-            char = typed[i];
+            if (typed[i] === word[i]) {
+              color = COLORS.correct;
+              char = typed[i];
+            } else {
+              color = COLORS.error;
+              char = word[i];
+            }
           } else {
-            color = COLORS.extra;
+            color = COLORS.error;
             char = typed[i];
           }
         } else if (isSkipped && i < word.length) {
           color = COLORS.skipped;
-        } else if (i < word.length) {
-          color = COLORS.pending;
         }
 
         if (isActive && i === typed.length) {
@@ -163,10 +171,11 @@ const TypingArea: React.FC = () => {
             style={{
               color,
               position: "relative",
-              fontWeight: 500,
-              fontSize: 38,
-              borderBottom: showCursor ? `2px solid ${COLORS.cursor}` : "none",
-              transition: "border-bottom 0.1s",
+              fontWeight: STYLE_CONFIG.fontWeight,
+              fontSize: STYLE_CONFIG.fontSize,
+              letterSpacing: STYLE_CONFIG.letterSpacing,
+              borderBottom: showCursor ? `2px solid ${COLORS.correct}` : "none",
+              transition: "border-bottom 0.1s"
             }}
           >
             {char || (showCursor ? "\u00a0" : "")}
@@ -175,9 +184,15 @@ const TypingArea: React.FC = () => {
       });
 
       return (
-        <span key={wordIdx} style={{ display: "inline" }}>
+        <span 
+          key={wordIdx} 
+          style={{ 
+            display: "inline-block",
+            marginRight: STYLE_CONFIG.wordSpacing,
+            marginBottom: "0.4em"
+          }}
+        >
           {letterSpans}
-          {wordIdx !== words.length - 1 && " "}
         </span>
       );
     });
@@ -191,8 +206,10 @@ const TypingArea: React.FC = () => {
         borderRadius: 12,
         fontFamily: "monospace",
         minHeight: 180,
-        maxWidth: 1300,
+        maxWidth: 1400,
         margin: "0 auto",
+        padding: "0 20px",
+        marginTop: "100px",
       }}
       onClick={() => inputRef.current?.focus()}
       tabIndex={0}
@@ -204,7 +221,7 @@ const TypingArea: React.FC = () => {
         style={{
           minHeight: 60,
           marginBottom: 16,
-          lineHeight: 1.8,
+          lineHeight: STYLE_CONFIG.lineHeight,
           userSelect: "none",
           whiteSpace: "normal",
           wordBreak: "break-word",
